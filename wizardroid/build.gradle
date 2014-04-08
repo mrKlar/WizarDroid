@@ -4,7 +4,7 @@ apply plugin: 'signing'
 
 android {
     compileSdkVersion 19
-    buildToolsVersion "19.0.0"
+    buildToolsVersion '19.0.0'
 
     defaultConfig {
         minSdkVersion 9
@@ -16,6 +16,7 @@ android {
 
 dependencies {
     compile 'com.android.support:support-v4:19.0.0'
+    compile 'com.viewpagerindicator:library:2.4.1@aar'
 }
 
 ext.isReleaseVersion = !version.endsWith("SNAPSHOT")

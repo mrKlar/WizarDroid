@@ -8,6 +8,8 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.ViewGroup;
 
+import com.viewpagerindicator.CirclePageIndicator;
+
 import org.codepond.wizardroid.infrastructure.Bus;
 import org.codepond.wizardroid.infrastructure.Disposable;
 import org.codepond.wizardroid.infrastructure.Subscriber;
@@ -43,6 +45,7 @@ public class Wizard implements Disposable, Subscriber {
     private final ContextManager contextManager;
     private final WizardCallbacks callbacks;
     private final ViewPager mPager;
+	private final CirclePageIndicator mTitlePageIndicator;
     private final FragmentManager mFragmentManager;
 
     private boolean fingerSlide;
@@ -86,8 +89,14 @@ public class Wizard implements Disposable, Subscriber {
             }
         });
 
+		//Bind the title indicator to the adapter
+		mTitlePageIndicator = (CirclePageIndicator)activity.findViewById(R.id.titles);
+		mTitlePageIndicator.setViewPager(mPager);
+
+		//mTitlePageIndicator.setFooterIndicatorStyle(TitlePageIndicator.IndicatorStyle.Triangle);
+
         //Implementation of OnPageChangeListener to handle wizard control via user finger slides
-        mPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+		mTitlePageIndicator.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 
             private boolean initialOffsetIsSet;
             private float initialOffset;
