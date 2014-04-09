@@ -16,11 +16,6 @@
         android:layout_height="fill_parent"
         android:layout_above="@+id/horizontal_line">
 
-        <com.viewpagerindicator.CirclePageIndicator
-            android:id="@+id/pageIndicator"
-            android:visibility="gone"
-            android:layout_height="wrap_content"
-            android:layout_width="fill_parent" />
 
         <org.codepond.wizardroid.infrastructure.DisableableScrollViewPager
             android:id="@id/step_container"

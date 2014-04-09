@@ -11,7 +11,6 @@ public class DisableableScrollViewPager extends ViewPager {
 	private Wizard wizard;
 	private float x1, y1;
 
-
 	public DisableableScrollViewPager(Context context) {
 		super(context);
 	}
@@ -27,10 +26,18 @@ public class DisableableScrollViewPager extends ViewPager {
 	@Override
 	public boolean onInterceptTouchEvent(MotionEvent event) {
 
+		switch (event.getAction()) {
+			case (MotionEvent.ACTION_DOWN):
+				x1 = event.getX();
+				y1 = event.getY();
 
-		// Never allow swiping to switch between pages
+				break;
 
-
+			case (MotionEvent.ACTION_UP):
+				x1 = 0;
+				y1 = 0;
+				break;
+		}
 		return super.onInterceptTouchEvent(event);
 	}
 
@@ -41,19 +48,11 @@ public class DisableableScrollViewPager extends ViewPager {
 			float x2, y2, dx, dy;
 
 			switch (event.getAction()) {
-				case (MotionEvent.ACTION_DOWN):
-					x1 = event.getX();
-					y1 = event.getY();
-
-					return true;
-
 				case (MotionEvent.ACTION_MOVE):
-
 					x2 = event.getX();
 					y2 = event.getY();
 					dx = x2 - x1;
 					dy = y2 - y1;
-
 
 					if (Math.abs(dx) > Math.abs(dy)) {
 						if (dx < 0) {
@@ -61,14 +60,7 @@ public class DisableableScrollViewPager extends ViewPager {
 						}
 					}
 					break;
-
-				case (MotionEvent.ACTION_UP):
-					x1 = 0;
-					y1 = 0;
-					break;
-
 			}
-
 		}
 		return super.onTouchEvent(event);
 	}
