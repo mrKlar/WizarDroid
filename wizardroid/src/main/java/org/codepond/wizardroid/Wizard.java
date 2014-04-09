@@ -8,9 +8,11 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.ViewGroup;
 
-import com.viewpagerindicator.CirclePageIndicator;
+import com.viewpagerindicator.IconPagerAdapter;
+import com.viewpagerindicator.PageIndicator;
 
 import org.codepond.wizardroid.infrastructure.Bus;
+import org.codepond.wizardroid.infrastructure.DisableableScrollViewPager;
 import org.codepond.wizardroid.infrastructure.Disposable;
 import org.codepond.wizardroid.infrastructure.Subscriber;
 import org.codepond.wizardroid.infrastructure.events.StepCompletedEvent;
@@ -44,8 +46,8 @@ public class Wizard implements Disposable, Subscriber {
 	private final WizardFlow wizardFlow;
     private final ContextManager contextManager;
     private final WizardCallbacks callbacks;
-    private final ViewPager mPager;
-	private final CirclePageIndicator mTitlePageIndicator;
+    private final DisableableScrollViewPager mPager;
+	private PageIndicator mPageIndicator = null;
     private final FragmentManager mFragmentManager;
 
     private boolean fingerSlide;
@@ -66,13 +68,15 @@ public class Wizard implements Disposable, Subscriber {
 		this.wizardFlow = wizardFlow;
         this.contextManager = contextManager;
         this.callbacks = callbacks;
-        this.mPager = (ViewPager) activity.findViewById(R.id.step_container);
+        this.mPager = (DisableableScrollViewPager) activity.findViewById(R.id.step_container);
         this.mFragmentManager = activity.getSupportFragmentManager();
 
         if (mPager == null) {
             throw new RuntimeException("Cannot initialize Wizard. View with ID: step_container not found!" +
                     " The hosting Activity/Fragment must have a ViewPager in its layout with ID: step_container");
         }
+
+		mPager.setWizard(this);
 
         mPager.setAdapter(new WizardPagerAdapter(activity.getSupportFragmentManager()));
 
@@ -89,72 +93,22 @@ public class Wizard implements Disposable, Subscriber {
             }
         });
 
-		//Bind the title indicator to the adapter
-		mTitlePageIndicator = (CirclePageIndicator)activity.findViewById(R.id.titles);
-		mTitlePageIndicator.setViewPager(mPager);
+		if (pageIndicatorVisible(wizardFlow)) {
+			mPageIndicator = (PageIndicator)activity.findViewById(R.id.pageIndicator);
+			mPageIndicator.setViewPager(mPager);
+			mPageIndicator.setOnPageChangeListener(new WizardOnPageChangeListener().invoke());
+		} else {
+			mPager.setOnPageChangeListener(new WizardOnPageChangeListener().invoke());
+		}
 
-		//mTitlePageIndicator.setFooterIndicatorStyle(TitlePageIndicator.IndicatorStyle.Triangle);
-
-        //Implementation of OnPageChangeListener to handle wizard control via user finger slides
-		mTitlePageIndicator.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-
-            private boolean initialOffsetIsSet;
-            private float initialOffset;
-            private boolean consumedPageSelectedEvent;
-
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                //Check if the page started to be dragged by the user
-                //and avoid positionOffset 0
-                if (!initialOffsetIsSet && positionOffset > 0) {
-                    //Store the initialOffset for later comparison
-                    initialOffset = positionOffset;
-                    //Signal that initial offset has been set for the current page drag sequence
-                    initialOffsetIsSet = true;
-                }
-                //Check slide direction and decide if to call goNext() or goBack()
-                //Once page is "selected" (visible to the user)), skip checking slide direction
-                if (!consumedPageSelectedEvent && positionOffset > 0) {
-                    if (positionOffset > initialOffset) {
-                        //Sliding right
-                        goNext();
-                        fingerSlide = true;
-                    }
-                    else if (positionOffset < initialOffset){
-                        //Sliding left
-                        goBack();
-                        fingerSlide = true;
-                    }
-                }
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-                //Signal that the page is now "selected"
-                if (backStackEntryCount < position){
-                    mFragmentManager.beginTransaction().addToBackStack(null).commit();
-                }
-                else if (backStackEntryCount > position){
-                    mFragmentManager.popBackStack();
-                }
-                consumedPageSelectedEvent = true;
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-                if (state == ViewPager.SCROLL_STATE_IDLE) {
-                    //No animation is on going, reset flags
-                    consumedPageSelectedEvent = false;
-                    initialOffsetIsSet = false;
-                    fingerSlide = false;
-                }
-
-            }
-        });
         Bus.getInstance().register(this, StepCompletedEvent.class);
 	}
 
-    @Override
+	private boolean pageIndicatorVisible(WizardFlow wizardFlow) {
+		return wizardFlow.getPagerIndicatorType() != WizardFlow.PagerIndicatorType.NONE;
+	}
+
+	@Override
     public void dispose() {
         Bus.getInstance().unregister(this);
     }
@@ -276,7 +230,7 @@ public class Wizard implements Disposable, Subscriber {
     /**
      * Custom adapter for the ViewPager
      */
-    public class WizardPagerAdapter extends FragmentStatePagerAdapter {
+    public class WizardPagerAdapter extends FragmentStatePagerAdapter implements IconPagerAdapter {
 
         private Fragment mPrimaryItem;
 
@@ -314,7 +268,12 @@ public class Wizard implements Disposable, Subscriber {
             }
         }
 
-        @Override
+	    @Override
+	    public int getIconResId(int i) {
+		    return wizardFlow.getIcons()[i];
+	    }
+
+	    @Override
         public int getCount() {
             return wizardFlow.getSteps().size();
         }
@@ -323,4 +282,64 @@ public class Wizard implements Disposable, Subscriber {
             return (WizardStep) mPrimaryItem;
         }
     }
+
+	//Implementation of OnPageChangeListener to handle wizard control via user finger slides
+	private class WizardOnPageChangeListener {
+		public ViewPager.OnPageChangeListener invoke() {
+			return new ViewPager.OnPageChangeListener() {
+
+				private boolean initialOffsetIsSet;
+				private float initialOffset;
+				private boolean consumedPageSelectedEvent;
+
+				@Override
+				public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+					//Check if the page started to be dragged by the user
+					//and avoid positionOffset 0
+					if (!initialOffsetIsSet && positionOffset > 0) {
+						//Store the initialOffset for later comparison
+						initialOffset = positionOffset;
+						//Signal that initial offset has been set for the current page drag sequence
+						initialOffsetIsSet = true;
+					}
+					//Check slide direction and decide if to call goNext() or goBack()
+					//Once page is "selected" (visible to the user)), skip checking slide direction
+					if (!consumedPageSelectedEvent && positionOffset > 0) {
+						if (positionOffset > initialOffset) {
+							//Sliding right
+							goNext();
+							fingerSlide = true;
+						} else if (positionOffset < initialOffset) {
+							//Sliding left
+							goBack();
+							fingerSlide = true;
+						}
+					}
+				}
+
+				@Override
+				public void onPageSelected(int position) {
+					//Signal that the page is now "selected"
+					if (backStackEntryCount < position) {
+						mFragmentManager.beginTransaction().addToBackStack(null).commit();
+					} else if (backStackEntryCount > position) {
+						mFragmentManager.popBackStack();
+					}
+					consumedPageSelectedEvent = true;
+				}
+
+				@Override
+				public void onPageScrollStateChanged(int state) {
+					if (state == ViewPager.SCROLL_STATE_IDLE) {
+						//No animation is on going, reset flags
+						consumedPageSelectedEvent = false;
+						initialOffsetIsSet = false;
+						fingerSlide = false;
+					}
+
+				}
+			};
+		}
+	}
 }

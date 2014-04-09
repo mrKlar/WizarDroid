@@ -2,10 +2,16 @@ package org.codepond.wizardroid.layouts;
 
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.*;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
+
+import com.viewpagerindicator.PageIndicator;
 
 import org.codepond.wizardroid.R;
+import org.codepond.wizardroid.WizardFlow;
 import org.codepond.wizardroid.WizardFragment;
 
 /**
@@ -50,10 +56,29 @@ public abstract class BasicWizardLayout extends WizardFragment implements View.O
         previousButton.setOnClickListener(this);
         previousButton.setText(getBackButtonLabel());
 
+	    if (flow.getPagerIndicatorType() != WizardFlow.PagerIndicatorType.NONE) {
+		    LinearLayout ll = (LinearLayout)wizardLayout.findViewById(R.id.pager);
+		    ll.addView(inflater.inflate(getPagerIndicatorLayoutID(), container, false), 0);
+
+		    PageIndicator pageIndicator = (PageIndicator)wizardLayout.findViewById(R.id.pageIndicator);
+		    ((View)pageIndicator).setVisibility(View.VISIBLE);
+	    }
         return wizardLayout;
     }
 
-    @Override
+	private int getPagerIndicatorLayoutID() {
+		int indicatorLayoutID = 0;
+		if (flow.getPagerIndicatorType() == WizardFlow.PagerIndicatorType.CIRCLE) {
+			indicatorLayoutID = R.layout.circle_page_indicator;
+		} else if (flow.getPagerIndicatorType() == WizardFlow.PagerIndicatorType.TITLE) {
+			indicatorLayoutID = R.layout.title_page_indicator;
+		} else if (flow.getPagerIndicatorType() == WizardFlow.PagerIndicatorType.ICON) {
+			indicatorLayoutID = R.layout.icon_page_indicator;
+		}
+		return indicatorLayoutID;
+	}
+
+	@Override
     public void onResume() {
         super.onResume();
         updateWizardControls();

@@ -10,6 +10,11 @@ import java.util.List;
  * Use {@link WizardFlow.Builder} to create an instance of WizardFlow.
  */
 public class WizardFlow {
+
+	public enum PagerIndicatorType {
+		ICON, CIRCLE, TITLE, NONE
+	}
+
     /**
      * This class wraps WizardStep to provide additional meta data which is persisted separately
      * as part of the wizard flow.
@@ -43,10 +48,17 @@ public class WizardFlow {
 
     }
 
+	private PagerIndicatorType pagerIndicatorType;
+
+	private int[] icons;
+
     private final List<StepMetaData> steps;
 
-	private WizardFlow(List<StepMetaData> steps) {
+
+	private WizardFlow(List<StepMetaData> steps, PagerIndicatorType pagerIndicatorType, int[] icons) {
 		this.steps = steps;
+		this.pagerIndicatorType = pagerIndicatorType;
+		this.icons = icons;
 	}
 
     /**
@@ -60,7 +72,7 @@ public class WizardFlow {
         //Calculate the cut off step by finding the last step which is required and incomplete
         for (StepMetaData stepMetaData : this.steps) {
             cutOffFlow.add(stepMetaData.getStepClass());
-            if (!stepMetaData.isCompleted() && stepMetaData.isRequired()) break;
+            //if (!stepMetaData.isCompleted() && stepMetaData.isRequired()) break;
         }
         return cutOffFlow;
 	}
@@ -121,6 +133,8 @@ public class WizardFlow {
 	public static class Builder {
 
         private List<StepMetaData> wizardSteps;
+		private PagerIndicatorType pagerIndicatorType = PagerIndicatorType.NONE;
+		private int[] icons = new int[] {};
 
         /**
 		 * Construct a WizardFlow.Builder
@@ -158,11 +172,37 @@ public class WizardFlow {
 		 */
 		public WizardFlow create() {
 			if (wizardSteps.size() > 0) {
-				return new WizardFlow(wizardSteps);
+				return new WizardFlow(wizardSteps, pagerIndicatorType, icons);
 			}
 			else {
 				throw new RuntimeException("Cannot create WizardFlow. No step has been added! Call Builder#addStep(stepClass) to add steps to the wizard flow.");
 			}
 		}
+
+		public Builder setPageIndicatorType(PagerIndicatorType pagerIndicatorType) {
+			this.pagerIndicatorType = pagerIndicatorType;
+			return this;
+		}
+
+		public Builder setPageIndicatorIcons(int[] icons) {
+			this.icons = icons;
+			return this;
+		}
+	}
+
+	public PagerIndicatorType getPagerIndicatorType() {
+		return pagerIndicatorType;
+	}
+
+	public void setPagerIndicatorType(PagerIndicatorType pagerIndicatorType) {
+		this.pagerIndicatorType = pagerIndicatorType;
+	}
+
+	public int[] getIcons() {
+		return icons;
+	}
+
+	public void setIcons(int[] icons) {
+		this.icons = icons;
 	}
 }

@@ -3,6 +3,7 @@ package org.codepond.wizardroid.sample.wizards;
 import org.codepond.wizardroid.WizardFlow;
 import org.codepond.wizardroid.layouts.BasicWizardLayout;
 import org.codepond.wizardroid.persistence.ContextVariable;
+import org.codepond.wizardroid.sample.R;
 import org.codepond.wizardroid.sample.steps.FormStep1;
 import org.codepond.wizardroid.sample.steps.FormStep2;
 import org.codepond.wizardroid.sample.steps.FormStep3;
@@ -33,6 +34,13 @@ public class FormWizard extends BasicWizardLayout {
      */
     @Override
     public WizardFlow onSetup() {
+	   int[] icons = new int[] {
+			    R.drawable.perm_group_calendar,
+
+			    R.drawable.perm_group_location,
+			   R.drawable.perm_group_camera
+	    };
+
         return new WizardFlow.Builder()
                 /*
                 Add your steps in the order you want them to appear and eventually call create()
@@ -46,6 +54,8 @@ public class FormWizard extends BasicWizardLayout {
                  */
                 .addStep(FormStep2.class, true)
                 .addStep(FormStep3.class)
+		        .setPageIndicatorType(WizardFlow.PagerIndicatorType.ICON)
+		        .setPageIndicatorIcons(icons)
                 .create();
     }
 

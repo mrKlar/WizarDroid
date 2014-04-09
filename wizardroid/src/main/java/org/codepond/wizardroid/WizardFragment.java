@@ -23,7 +23,7 @@ import org.codepond.wizardroid.persistence.ContextManagerImpl;
 public abstract class WizardFragment extends Fragment implements Wizard.WizardCallbacks {
 	private static final String TAG = WizardFragment.class.getSimpleName();
     private static final String STATE_WIZARD_CONTEXT = "ContextVariable";
-    private WizardFlow flow;
+    protected WizardFlow flow;
     private ContextManager contextManager;
 
     protected Wizard wizard;
