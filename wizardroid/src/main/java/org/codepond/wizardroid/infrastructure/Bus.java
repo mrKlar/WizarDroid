@@ -1,11 +1,15 @@
 package org.codepond.wizardroid.infrastructure;
 
+import org.codepond.wizardroid.infrastructure.events.WizardEvent;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Bus {
     private static final Bus instance = new Bus();
-    private static Map<Subscriber, Class<?>> subscribers = new HashMap<Subscriber, Class<?>>();
+    private static Map<Class, List<Subscriber>> subscribers = new HashMap<Class, List<Subscriber>>();
 
     private Bus() {
     }
@@ -14,24 +18,34 @@ public class Bus {
         return instance;
     }
 
-    public void post(Object event) {
-        Class messageType = event.getClass();
-        for (Map.Entry<Subscriber, Class<?>> entry : subscribers.entrySet()) {
-            if (entry.getValue() == messageType) {
-                entry.getKey().receive(event);
-            }
+    public void post(WizardEvent event) {
+        for (Class eventType : subscribers.keySet()) {
+	        if (eventType.isInstance(event)) {
+		        List<Subscriber> subscribersForEvent = subscribers.get(eventType);
+		        for (Subscriber subscriber : subscribersForEvent) {
+			        subscriber.receive(event);
+		        }
+	        }
         }
     }
 
-    public void register(Subscriber subscriber, Class<?> eventType) {
-        if (!subscribers.containsKey(subscriber)) {
-            subscribers.put(subscriber, eventType);
+    public void register(Subscriber subscriber, Class eventType) {
+        if (!subscribers.containsKey(eventType)) {
+	        List<Subscriber> subscriberList = new ArrayList<Subscriber>();
+	        subscriberList.add(subscriber);
+            subscribers.put(eventType, subscriberList);
+        } else {
+	        List<Subscriber> subscriberList = subscribers.get(eventType);
+	        subscriberList.add(subscriber);
         }
     }
 
     public void unregister(Subscriber subscriber) {
-        if (subscribers.containsKey(subscriber)) {
-            subscribers.remove(subscriber);
-        }
+	    for (Class eventType : subscribers.keySet()) {
+		    List<Subscriber> subscribersForEvent = subscribers.get(eventType);
+		    if (subscribersForEvent.contains(subscriber)) {
+			    subscribersForEvent.remove(subscriber);
+		    }
+	    }
     }
 }

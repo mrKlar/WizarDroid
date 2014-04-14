@@ -4,9 +4,11 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
-import org.codepond.wizardroid.persistence.ContextVariable;
+
 import org.codepond.wizardroid.WizardStep;
+import org.codepond.wizardroid.persistence.ContextVariable;
 import org.codepond.wizardroid.sample.R;
 
 public class FormStep1 extends WizardStep {
@@ -25,6 +27,8 @@ public class FormStep1 extends WizardStep {
     EditText firstnameEt;
     EditText lastnameEt;
 
+	Button nextButton;
+
     //You must have an empty constructor for every step
     public FormStep1() {
     }
@@ -37,10 +41,18 @@ public class FormStep1 extends WizardStep {
         //Get reference to the textboxes
         firstnameEt = (EditText) v.findViewById(R.id.firstnameField);
         lastnameEt = (EditText) v.findViewById(R.id.lastnameField);
+	    nextButton = (Button)v.findViewById(R.id.nextButton);
 
         //and set default values by using Context Variables
         firstnameEt.setText(firstname);
         lastnameEt.setText(lastname);
+
+	    nextButton.setOnClickListener(new View.OnClickListener() {
+		    @Override
+		    public void onClick(View v) {
+			    goNext();
+		    }
+	    });
 
         return v;
     }

@@ -1,5 +1,7 @@
 package org.codepond.wizardroid.infrastructure;
 
+import org.codepond.wizardroid.infrastructure.events.WizardEvent;
+
 public interface Subscriber {
-    void receive(Object event);
+    void receive(WizardEvent event);
 }

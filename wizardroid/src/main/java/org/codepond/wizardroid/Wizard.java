@@ -15,7 +15,10 @@ import org.codepond.wizardroid.infrastructure.Bus;
 import org.codepond.wizardroid.infrastructure.DisableableScrollViewPager;
 import org.codepond.wizardroid.infrastructure.Disposable;
 import org.codepond.wizardroid.infrastructure.Subscriber;
+import org.codepond.wizardroid.infrastructure.events.GoBackStepEvent;
+import org.codepond.wizardroid.infrastructure.events.GoToNextStepEvent;
 import org.codepond.wizardroid.infrastructure.events.StepCompletedEvent;
+import org.codepond.wizardroid.infrastructure.events.WizardEvent;
 import org.codepond.wizardroid.persistence.ContextManager;
 
 /**
@@ -102,6 +105,8 @@ public class Wizard implements Disposable, Subscriber {
 		}
 
         Bus.getInstance().register(this, StepCompletedEvent.class);
+		Bus.getInstance().register(this, GoToNextStepEvent.class);
+		Bus.getInstance().register(this, GoBackStepEvent.class);
 	}
 
 	private boolean pageIndicatorVisible(WizardFlow wizardFlow) {
@@ -114,9 +119,15 @@ public class Wizard implements Disposable, Subscriber {
     }
 
     @Override
-    public void receive(Object event) {
-        StepCompletedEvent stepCompletedEvent = (StepCompletedEvent) event;
-        onStepCompleted(stepCompletedEvent.isStepCompleted());
+    public void receive(WizardEvent event) {
+	    if (event instanceof StepCompletedEvent) {
+		    StepCompletedEvent stepCompletedEvent = (StepCompletedEvent) event;
+		    onStepCompleted(stepCompletedEvent.isStepCompleted());
+	    } else if (event instanceof GoToNextStepEvent) {
+		    goNext();
+	    } else if (event instanceof GoBackStepEvent) {
+		    goBack();
+	    }
     }
 
     private void onStepCompleted(boolean isComplete) {

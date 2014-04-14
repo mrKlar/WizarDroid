@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
 import org.codepond.wizardroid.infrastructure.Bus;
+import org.codepond.wizardroid.infrastructure.events.GoBackStepEvent;
+import org.codepond.wizardroid.infrastructure.events.GoToNextStepEvent;
 import org.codepond.wizardroid.infrastructure.events.StepCompletedEvent;
 import org.codepond.wizardroid.persistence.ContextVariable;
 
@@ -48,7 +50,19 @@ public abstract class WizardStep extends Fragment {
         Bus.getInstance().post(new StepCompletedEvent(isStepCompleted));
     }
 
-    /**
+	/**
+	 * Notify the wizard that this steps wishes to show the next step
+	 */
+	public void goNext() {
+		Bus.getInstance().post(new GoToNextStepEvent());
+	}
+
+	public void goBack() {
+		Bus.getInstance().post(new GoBackStepEvent());
+	}
+
+
+	/**
      * IMPORTANT: This method is overridden to bind the wizard context to the step's fields.
      * Make sure to call super.onAttach(activity), if you override this method in your step class.
      */

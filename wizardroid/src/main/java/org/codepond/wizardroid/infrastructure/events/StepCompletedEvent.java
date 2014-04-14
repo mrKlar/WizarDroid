@@ -3,7 +3,7 @@ package org.codepond.wizardroid.infrastructure.events;
 /**
  * Otto event triggered when a wizard step is either set as completed or incomplete
  */
-public class StepCompletedEvent {
+public class StepCompletedEvent implements WizardEvent {
     private boolean isStepCompleted;
     public StepCompletedEvent(boolean isStepComplete) {
         this.isStepCompleted = isStepComplete;
