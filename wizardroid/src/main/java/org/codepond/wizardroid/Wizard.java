@@ -72,6 +72,7 @@ public class Wizard implements Disposable, Subscriber {
         this.contextManager = contextManager;
         this.callbacks = callbacks;
         this.mPager = (DisableableScrollViewPager) activity.findViewById(R.id.step_container);
+
         this.mFragmentManager = activity.getSupportFragmentManager();
 
         if (mPager == null) {

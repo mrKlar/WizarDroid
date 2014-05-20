@@ -25,43 +25,11 @@ public class DisableableScrollViewPager extends ViewPager {
 
 	@Override
 	public boolean onInterceptTouchEvent(MotionEvent event) {
-
-		switch (event.getAction()) {
-			case (MotionEvent.ACTION_DOWN):
-				x1 = event.getX();
-				y1 = event.getY();
-
-				break;
-
-			case (MotionEvent.ACTION_UP):
-				x1 = 0;
-				y1 = 0;
-				break;
-		}
-		return super.onInterceptTouchEvent(event);
+		return false;
 	}
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-
-		if (wizard != null && !wizard.canGoNext()) {
-			float x2, y2, dx, dy;
-
-			switch (event.getAction()) {
-				case (MotionEvent.ACTION_MOVE):
-					x2 = event.getX();
-					y2 = event.getY();
-					dx = x2 - x1;
-					dy = y2 - y1;
-
-					if (Math.abs(dx) > Math.abs(dy)) {
-						if (dx < 0) {
-							return false;
-						}
-					}
-					break;
-			}
-		}
-		return super.onTouchEvent(event);
+		return false;
 	}
 }
